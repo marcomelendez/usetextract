@@ -9,6 +9,7 @@ load_dotenv()
 app = Flask(__name__)
 
 
+EXCLUDE_TEXTS = ['advertencia','ADVERTENCIA']
 
 
 @app.route('/')
@@ -17,7 +18,6 @@ def home():
 
 
 @app.route('/uploadimg',methods=['POST'])
-
 def convertImg():
     """Extracts text from an uploaded image using AWS Textract.
 
@@ -66,7 +66,7 @@ def convertImg():
         response = textract.detect_document_text(Document={'Bytes': image_bytes})
         extracted_text = extract_text_from_response(response)  # Implement extract_text_from_response
     except Exception as e:
-        return jsonify({'message': 'Failed to extract text from image.'}), 400
+        return jsonify({'message': f'Failed to extract text from image.{e}'}), 400
     
     if extracted_text:
         return extracted_text
@@ -89,8 +89,9 @@ def extract_text_from_response(response):
         #   extracted_text += item["Text"] + '\n'  # Add newline for readability
           extractedList.append(item['Text'])
   
-          
-  result = {'fulltext': extracted_text.join(extractedList),'amount': extract_amount(extractedList)}
+  resumeText = filterExclude (extracted_text.join(extractedList), EXCLUDE_TEXTS)
+
+  result = {'fulltext': resumeText,'amount': extract_amount(extractedList)}
   return jsonify(result), 200
 
 def extract_amount(collection):
@@ -99,7 +100,13 @@ def extract_amount(collection):
         if match:
             return match.group()
 
-
+def filterExclude(text, claves):
+ 
+    for clave in claves:
+        indexSel = text.find(clave)
+        if indexSel != -1:
+            return text[:indexSel]
+    return text
 
 if __name__ == '__main__':
   app.run(debug=True)
