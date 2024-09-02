@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import boto3
 from dotenv import load_dotenv
 import os
@@ -7,7 +8,7 @@ import re
 load_dotenv()
 
 app = Flask(__name__)
-
+CORS(app)
 
 EXCLUDE_TEXTS = ['advertencia','ADVERTENCIA']
 
@@ -15,7 +16,6 @@ EXCLUDE_TEXTS = ['advertencia','ADVERTENCIA']
 @app.route('/')
 def home():
   return "Hola mundo"
-
 
 @app.route('/uploadimg',methods=['POST'])
 def convertImg():
